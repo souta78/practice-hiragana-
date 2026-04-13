@@ -85,6 +85,10 @@ body::before {
 .btn-back:active { background: var(--paper-deep); transform: scale(0.97); }
 
 /* Mode pill in top bar */
+.top-bar-right {
+  display: flex; align-items: center; gap: 8px;
+}
+
 .mode-pill {
   font-size: 11px; font-weight: 600;
   letter-spacing: 0.12em; text-transform: uppercase;
@@ -93,6 +97,22 @@ body::before {
   border-radius: 100px; padding: 5px 13px;
   box-shadow: var(--shadow-sm);
 }
+
+/* Settings button in practice top bar */
+.btn-settings-practice {
+  display: flex; align-items: center; gap: 5px;
+  background: white; border: 1px solid var(--border);
+  border-radius: 100px; padding: 6px 13px;
+  box-shadow: var(--shadow-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 500;
+  letter-spacing: 0.04em; color: var(--ink-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+  min-height: 34px;
+}
+.btn-settings-practice:hover { background: var(--paper-deep); color: var(--ink); }
+.btn-settings-practice:active { transform: scale(0.96); background: var(--paper-deep); }
 
 /* ══ MENU SCREEN ══ */
 #screen-menu { overflow-y: auto; }
@@ -583,15 +603,14 @@ body::before {
 .choice-btn {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 5px;
-  padding: 18px 12px 16px;
+  padding: 20px 12px;
   border: 1.5px solid var(--border);
   border-radius: 14px;
   background: var(--paper);
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, transform 0.12s;
   user-select: none;
-  min-height: 80px;
+  min-height: 72px;
 }
 .choice-btn:hover:not(:disabled) {
   background: var(--paper-deep);
@@ -613,17 +632,13 @@ body::before {
   box-shadow: 0 0 0 3px rgba(201,64,64,0.1);
 }
 
-.choice-kana {
-  font-family: 'Noto Sans JP', sans-serif;
-  font-size: 32px; font-weight: 400;
-  color: var(--ink); line-height: 1;
-}
 .choice-romaji {
   font-family: 'DM Mono', monospace;
-  font-size: 12px; color: var(--ink-muted);
+  font-size: 22px; font-weight: 500;
   letter-spacing: 0.06em;
+  color: var(--ink);
 }
-.choice-btn.correct-choice .choice-romaji { color: var(--jade); font-weight: 500; }
+.choice-btn.correct-choice .choice-romaji { color: var(--jade); }
 .choice-btn.incorrect-choice .choice-romaji { color: var(--vermillion); }
 
 .choice-next {
@@ -650,6 +665,40 @@ body::before {
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 #character.appear { animation: appear 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+
+/* ══ PRACTICE SETTINGS OVERLAY ══ */
+.psettings-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(26,23,20,0.35);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.psettings-overlay.visible { opacity: 1; pointer-events: auto; }
+.psettings-overlay.hidden { display: none; }
+
+.psettings-panel {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(26,23,20,0.18);
+  width: 100%; max-width: 360px;
+  padding: 26px 24px 22px;
+  transform: translateY(10px);
+  transition: transform 0.25s cubic-bezier(0.34,1.2,0.64,1);
+}
+.psettings-overlay.visible .psettings-panel { transform: translateY(0); }
+
+.psettings-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 6px;
+}
+.psettings-title {
+  font-size: 16px; font-weight: 700;
+  letter-spacing: -0.01em; color: var(--ink);
+}
 
 /* ══ RESPONSIVE ══ */
 @media (max-width: 600px) {
