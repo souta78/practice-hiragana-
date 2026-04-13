@@ -210,6 +210,61 @@ function saveSettings() {
   try { localStorage.setItem('hiragana-settings', JSON.stringify(settings)); } catch(e) {}
 }
 
+// ── Practice settings overlay ─────────────────────────────────────────────────
+function openPracticeSettings() {
+  // Sync checkboxes with current state
+  document.getElementById('pcfg-basic').checked       = settings.basic;
+  document.getElementById('pcfg-dakuten').checked     = settings.dakuten;
+  document.getElementById('pcfg-handakuten').checked  = settings.handakuten;
+  document.getElementById('pcfg-combination').checked = settings.combination;
+  // Update pool count label
+  const pool = getActiveKanaPool();
+  document.getElementById('psettings-pool-info').textContent = pool.length + ' characters in practice pool';
+
+  const overlay = document.getElementById('psettings-overlay');
+  overlay.classList.remove('hidden');
+  requestAnimationFrame(() => overlay.classList.add('visible'));
+}
+
+function closePracticeSettings() {
+  const overlay = document.getElementById('psettings-overlay');
+  overlay.classList.remove('visible');
+  setTimeout(() => overlay.classList.add('hidden'), 250);
+}
+
+function closePracticeSettingsBackdrop(e) {
+  if (e.target === document.getElementById('psettings-overlay')) closePracticeSettings();
+}
+
+function applyPracticeSettings() {
+  settings.basic       = document.getElementById('pcfg-basic').checked;
+  settings.dakuten     = document.getElementById('pcfg-dakuten').checked;
+  settings.handakuten  = document.getElementById('pcfg-handakuten').checked;
+  settings.combination = document.getElementById('pcfg-combination').checked;
+
+  // Ensure at least one group stays active
+  if (!settings.basic && !settings.dakuten && !settings.handakuten && !settings.combination) {
+    settings.basic = true;
+    document.getElementById('pcfg-basic').checked = true;
+  }
+
+  saveSettings();
+
+  // Keep menu checkboxes in sync
+  document.getElementById('cfg-basic').checked       = settings.basic;
+  document.getElementById('cfg-dakuten').checked     = settings.dakuten;
+  document.getElementById('cfg-handakuten').checked  = settings.handakuten;
+  document.getElementById('cfg-combination').checked = settings.combination;
+
+  const pool = getActiveKanaPool();
+  document.getElementById('psettings-pool-info').textContent = pool.length + ' characters in practice pool';
+  updatePoolInfo();
+
+  // Reset and show new character with updated pool
+  practiceHistory = [];
+  showNewChar();
+}
+
 function updatePoolInfo() {
   const pool = getActiveKanaPool();
   const el = document.getElementById('settings-pool-info');
@@ -448,10 +503,8 @@ function buildChoiceGrid() {
   choices.forEach(choice => {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
-    btn.innerHTML = `
-      <span class="choice-kana">${choice.char}</span>
-      <span class="choice-romaji">${choice.romaji[0]}</span>
-    `;
+    btn.dataset.char = choice.char;
+    btn.innerHTML = `<span class="choice-romaji">${choice.romaji[0]}</span>`;
     btn.addEventListener('click', () => handleChoiceClick(btn, choice));
     choiceGrid.appendChild(btn);
   });
@@ -463,19 +516,14 @@ function handleChoiceClick(btn, choice) {
 
   const isCorrect = choice.char === current.char;
 
-  // Disable all buttons
+  // Disable all buttons and highlight the correct one
   choiceGrid.querySelectorAll('.choice-btn').forEach(b => {
     b.disabled = true;
-    // Highlight correct answer regardless
-    const kana = b.querySelector('.choice-kana').textContent;
-    if (kana === current.char) {
-      b.classList.add('correct-choice');
-    }
+    if (b.dataset.char === current.char) b.classList.add('correct-choice');
   });
 
   if (isCorrect) {
     playCorrectSound();
-    btn.classList.add('correct-choice');
     choiceFeedback.innerHTML = '<span>✓</span> Correct!';
     choiceFeedback.className = 'feedback correct';
     charWrapper.classList.add('correct');
@@ -510,7 +558,11 @@ document.addEventListener('pointerdown', () => {
 }, { once: true });
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') goToMenu();
+  if (e.key === 'Escape') {
+    const po = document.getElementById('psettings-overlay');
+    if (po && !po.classList.contains('hidden')) { closePracticeSettings(); return; }
+    goToMenu();
+  }
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────
