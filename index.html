@@ -19,7 +19,77 @@
     <div class="menu-hero">
       <div class="hero-kana">あいうえお</div>
       <h1 class="hero-title">Learn Hiragana</h1>
-      <p class="hero-sub">Tap any group below to see the characters and their romaji.<br>When you're ready, start practicing!</p>
+      <p class="hero-sub">Configure your practice below, then start when you're ready.</p>
+
+      <!-- Inline Settings Panel -->
+      <div class="menu-settings">
+
+        <div class="settings-section-label">Practice Mode</div>
+        <div class="mode-selector">
+          <button class="mode-btn active" id="mode-btn-typing" onclick="setMode('typing')">
+            <div class="mode-icon">Aa</div>
+            <div class="mode-label">Typing</div>
+            <div class="mode-desc">Type the romaji</div>
+          </button>
+          <button class="mode-btn" id="mode-btn-choice" onclick="setMode('choice')">
+            <div class="mode-icon">⊙</div>
+            <div class="mode-label">Multiple Choice</div>
+            <div class="mode-desc">Pick the answer</div>
+          </button>
+        </div>
+
+        <div class="settings-section-label" style="margin-top:22px">Kana Selection</div>
+        <div class="settings-options">
+
+          <label class="setting-item">
+            <div class="setting-check-wrap">
+              <input type="checkbox" id="cfg-basic" checked onchange="applySettings()">
+              <span class="custom-check"></span>
+            </div>
+            <div class="setting-info">
+              <span class="setting-name">Basic Hiragana</span>
+              <span class="setting-preview">あ い う え お … ん</span>
+            </div>
+          </label>
+
+          <label class="setting-item">
+            <div class="setting-check-wrap">
+              <input type="checkbox" id="cfg-dakuten" onchange="applySettings()">
+              <span class="custom-check"></span>
+            </div>
+            <div class="setting-info">
+              <span class="setting-name">Dakuten <span class="badge-kana">゙</span></span>
+              <span class="setting-preview">が ざ だ ば …</span>
+            </div>
+          </label>
+
+          <label class="setting-item">
+            <div class="setting-check-wrap">
+              <input type="checkbox" id="cfg-handakuten" onchange="applySettings()">
+              <span class="custom-check"></span>
+            </div>
+            <div class="setting-info">
+              <span class="setting-name">Handakuten <span class="badge-kana">゚</span></span>
+              <span class="setting-preview">ぱ ぴ ぷ ぺ ぽ</span>
+            </div>
+          </label>
+
+          <label class="setting-item">
+            <div class="setting-check-wrap">
+              <input type="checkbox" id="cfg-combination" onchange="applySettings()">
+              <span class="custom-check"></span>
+            </div>
+            <div class="setting-info">
+              <span class="setting-name">Combination (Yōon)</span>
+              <span class="setting-preview">きゃ しゅ ちょ …</span>
+            </div>
+          </label>
+
+        </div>
+        <div class="settings-pool-info" id="settings-pool-info">46 characters in practice pool</div>
+      </div>
+      <!-- End Settings Panel -->
+
       <button class="btn-start" onclick="startPractice()">Start Practice →</button>
     </div>
 
@@ -45,23 +115,7 @@
 
     <div class="top-bar">
       <button class="btn-back" onclick="goToMenu()">← Menu</button>
-      <div class="stats">
-        <div class="stat-pill">
-          <span class="dot"></span>
-          Correct <strong id="stat-correct">0</strong>
-        </div>
-        <div class="stat-pill">
-          <span class="dot red"></span>
-          Wrong <strong id="stat-wrong">0</strong>
-        </div>
-        <button class="btn-settings" onclick="openSettings()" title="Practice Settings">
-          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.8"/>
-            <path d="M10 1v2M10 17v2M1 10h2M17 10h2M3.22 3.22l1.42 1.42M15.36 15.36l1.42 1.42M3.22 16.78l1.42-1.42M15.36 4.64l1.42-1.42" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-          Settings
-        </button>
-      </div>
+      <div class="mode-pill" id="mode-pill">Typing</div>
     </div>
 
     <div class="practice-body">
@@ -76,98 +130,41 @@
 
         <div class="romaji-hint" id="romaji-hint"></div>
 
-        <div class="input-row">
-          <input
-            type="text" id="answer"
-            placeholder="type romaji…"
-            autocomplete="off" autocorrect="off"
-            autocapitalize="none" spellcheck="false"
-          />
+        <!-- ── Typing Mode UI ── -->
+        <div id="typing-ui">
+          <div class="input-row">
+            <input
+              type="text" id="answer"
+              placeholder="type romaji…"
+              autocomplete="off" autocorrect="off"
+              autocapitalize="none" spellcheck="false"
+            />
+          </div>
+
+          <div class="feedback" id="feedback" aria-live="polite"></div>
+
+          <div class="btn-row" id="btn-check-row">
+            <button class="btn btn-check" id="btn-check">Check</button>
+            <button class="btn btn-skip hidden" id="btn-skip">Skip</button>
+          </div>
+
+          <button class="btn btn-next" id="btn-next">Next →</button>
+
+          <div class="hint-row">
+            <span class="kbd">press <span>Enter</span> to check / continue</span>
+          </div>
         </div>
 
-        <div class="feedback" id="feedback" aria-live="polite"></div>
-
-        <div class="btn-row" id="btn-check-row">
-          <button class="btn btn-check" id="btn-check">Check</button>
-          <button class="btn btn-skip hidden" id="btn-skip">Skip</button>
+        <!-- ── Multiple Choice UI ── -->
+        <div id="choice-ui" class="hidden">
+          <div class="feedback" id="choice-feedback" aria-live="polite"></div>
+          <div class="choice-grid" id="choice-grid"></div>
+          <button class="btn btn-next choice-next hidden" id="choice-btn-next">Next →</button>
         </div>
 
-        <button class="btn btn-next" id="btn-next">Next →</button>
-
-        <div class="hint-row">
-          <span class="kbd">press <span>Enter</span> to check / continue</span>
-        </div>
       </div>
     </div>
 
-  </div>
-
-  <!-- ══════════════════════════
-       SETTINGS MODAL
-  ══════════════════════════ -->
-  <div class="settings-overlay hidden" id="settings-overlay" onclick="closeSettingsOnBackdrop(event)">
-    <div class="settings-panel">
-      <div class="settings-header">
-        <span class="settings-title">Practice Settings</span>
-        <button class="settings-close" onclick="closeSettings()">✕</button>
-      </div>
-      <p class="settings-sub">Choose which kana appear during practice.</p>
-
-      <div class="settings-options">
-
-        <label class="setting-item">
-          <div class="setting-check-wrap">
-            <input type="checkbox" id="cfg-basic" checked onchange="applySettings()">
-            <span class="custom-check"></span>
-          </div>
-          <div class="setting-info">
-            <span class="setting-name">Basic Hiragana</span>
-            <span class="setting-preview">あ い う え お … ん</span>
-          </div>
-        </label>
-
-        <label class="setting-item">
-          <div class="setting-check-wrap">
-            <input type="checkbox" id="cfg-dakuten" onchange="applySettings()">
-            <span class="custom-check"></span>
-          </div>
-          <div class="setting-info">
-            <span class="setting-name">Dakuten <span class="badge-kana">゙</span></span>
-            <span class="setting-preview">が ざ だ ば …</span>
-          </div>
-        </label>
-
-        <label class="setting-item">
-          <div class="setting-check-wrap">
-            <input type="checkbox" id="cfg-handakuten" onchange="applySettings()">
-            <span class="custom-check"></span>
-          </div>
-          <div class="setting-info">
-            <span class="setting-name">Handakuten <span class="badge-kana">゚</span></span>
-            <span class="setting-preview">ぱ ぴ ぷ ぺ ぽ</span>
-          </div>
-        </label>
-
-        <label class="setting-item">
-          <div class="setting-check-wrap">
-            <input type="checkbox" id="cfg-combination" onchange="applySettings()">
-            <span class="custom-check"></span>
-          </div>
-          <div class="setting-info">
-            <span class="setting-name">Combination (Yōon)</span>
-            <span class="setting-preview">きゃ しゅ ちょ …</span>
-          </div>
-        </label>
-
-      </div>
-
-      <div class="settings-pool-info" id="settings-pool-info"></div>
-    </div>
-  </div>
-
-  <!-- Progress bar -->
-  <div class="progress-bar-wrap" aria-hidden="true">
-    <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
   </div>
 
   <script src="script.js"></script>
