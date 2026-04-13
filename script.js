@@ -10,9 +10,8 @@ function playCorrectSound() {
   try {
     const ctx = getAudioCtx();
     const t = ctx.currentTime;
-    const freqs = [523.25, 659.25];
-    freqs.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
+    [523.25, 659.25].forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
       gain.connect(ctx.destination);
@@ -31,7 +30,7 @@ function playWrongSound() {
   try {
     const ctx = getAudioCtx();
     const t = ctx.currentTime;
-    const osc = ctx.createOscillator();
+    const osc  = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -153,7 +152,6 @@ const COMBINATION_ROWS = [
   ]},
 ];
 
-// All grouped rows for chart rendering
 const ALL_ROW_GROUPS = {
   basic:       BASIC_ROWS,
   dakuten:     DAKUTEN_ROWS,
@@ -167,9 +165,9 @@ const settings = {
   dakuten:     false,
   handakuten:  false,
   combination: false,
+  mode:        'typing',   // 'typing' | 'choice'
 };
 
-// Load from localStorage
 try {
   const saved = JSON.parse(localStorage.getItem('hiragana-settings'));
   if (saved) Object.assign(settings, saved);
@@ -182,7 +180,7 @@ function getActiveKanaPool() {
     ...(settings.handakuten  ? HANDAKUTEN_ROWS   : []),
     ...(settings.combination ? COMBINATION_ROWS  : []),
   ];
-  return rows.flatMap(r => r.chars.map(c => ({...c, row: r.name})));
+  return rows.flatMap(r => r.chars.map(c => ({ ...c, row: r.name })));
 }
 
 function applySettings() {
@@ -191,19 +189,25 @@ function applySettings() {
   settings.handakuten  = document.getElementById('cfg-handakuten').checked;
   settings.combination = document.getElementById('cfg-combination').checked;
 
-  // Ensure at least one is checked
-  const anyOn = Object.values(settings).some(Boolean);
-  if (!anyOn) {
+  // Ensure at least one group is selected
+  if (!Object.values(settings).some(v => v === true)) {
     settings.basic = true;
     document.getElementById('cfg-basic').checked = true;
   }
 
-  try { localStorage.setItem('hiragana-settings', JSON.stringify(settings)); } catch(e) {}
-
-  // Reset history when pool changes
-  history = [];
-
+  saveSettings();
   updatePoolInfo();
+}
+
+function setMode(mode) {
+  settings.mode = mode;
+  document.getElementById('mode-btn-typing').classList.toggle('active', mode === 'typing');
+  document.getElementById('mode-btn-choice').classList.toggle('active', mode === 'choice');
+  saveSettings();
+}
+
+function saveSettings() {
+  try { localStorage.setItem('hiragana-settings', JSON.stringify(settings)); } catch(e) {}
 }
 
 function updatePoolInfo() {
@@ -212,34 +216,18 @@ function updatePoolInfo() {
   if (el) el.textContent = pool.length + ' characters in practice pool';
 }
 
-// ── Settings modal ────────────────────────────────────────────────────────────
-function openSettings() {
-  // Sync checkboxes with current state
+// Apply saved mode to buttons on page load
+function initSettingsUI() {
   document.getElementById('cfg-basic').checked       = settings.basic;
   document.getElementById('cfg-dakuten').checked     = settings.dakuten;
   document.getElementById('cfg-handakuten').checked  = settings.handakuten;
   document.getElementById('cfg-combination').checked = settings.combination;
+  document.getElementById('mode-btn-typing').classList.toggle('active', settings.mode === 'typing');
+  document.getElementById('mode-btn-choice').classList.toggle('active', settings.mode === 'choice');
   updatePoolInfo();
-  document.getElementById('settings-overlay').classList.remove('hidden');
-  // trigger animation
-  requestAnimationFrame(() => {
-    document.getElementById('settings-overlay').classList.add('visible');
-  });
-}
-
-function closeSettings() {
-  const overlay = document.getElementById('settings-overlay');
-  overlay.classList.remove('visible');
-  setTimeout(() => overlay.classList.add('hidden'), 250);
-}
-
-function closeSettingsOnBackdrop(e) {
-  if (e.target === document.getElementById('settings-overlay')) closeSettings();
 }
 
 // ── Build chart ───────────────────────────────────────────────────────────────
-let currentChartGroup = 'basic';
-
 function buildChart(groupKey) {
   const rows = ALL_ROW_GROUPS[groupKey];
   const container = document.getElementById('chart-rows');
@@ -249,7 +237,7 @@ function buildChart(groupKey) {
     const group = document.createElement('div');
     group.className = 'row-group' + (ri === 0 ? ' open' : '');
 
-    const preview = row.chars.slice(0,4).map(c=>c.char).join('') + (row.chars.length > 4 ? '…' : '');
+    const preview = row.chars.slice(0, 4).map(c => c.char).join('') + (row.chars.length > 4 ? '…' : '');
 
     group.innerHTML = `
       <div class="row-header" onclick="this.parentElement.classList.toggle('open')">
@@ -263,8 +251,8 @@ function buildChart(groupKey) {
         </div>
       </div>
       <div class="row-body">
-        ${row.chars.map((c,i)=>`
-          <div class="kana-card" style="animation-delay:${i*25}ms">
+        ${row.chars.map((c, i) => `
+          <div class="kana-card" style="animation-delay:${i * 25}ms">
             <span class="kana">${c.char}</span>
             <span class="roma">${c.romaji[0]}</span>
           </div>
@@ -278,17 +266,24 @@ function buildChart(groupKey) {
 function switchChartTab(btn, groupKey) {
   document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
-  currentChartGroup = groupKey;
   buildChart(groupKey);
 }
-
-// Initial chart build
-buildChart('basic');
 
 // ── Screen switching ──────────────────────────────────────────────────────────
 function startPractice() {
   document.getElementById('screen-menu').classList.add('hidden');
   document.getElementById('screen-practice').classList.remove('hidden');
+
+  // Update mode pill
+  document.getElementById('mode-pill').textContent =
+    settings.mode === 'choice' ? 'Multiple Choice' : 'Typing';
+
+  // Show correct UI for mode
+  document.getElementById('typing-ui').classList.toggle('hidden', settings.mode !== 'typing');
+  document.getElementById('choice-ui').classList.toggle('hidden', settings.mode !== 'choice');
+
+  // Reset practice history
+  practiceHistory = [];
   showNewChar();
 }
 
@@ -297,57 +292,75 @@ function goToMenu() {
   document.getElementById('screen-menu').classList.remove('hidden');
 }
 
-// ── State ─────────────────────────────────────────────────────────────────────
-let current    = null;
-let answered   = false;
-let wrongCount = 0;
-let stats      = { correct: 0, wrong: 0 };
-let history    = [];
-const HISTORY_LEN = 5;
+// ── Practice State ────────────────────────────────────────────────────────────
+let current        = null;
+let answered       = false;
+let wrongCount     = 0;
+let practiceHistory = [];
+const HISTORY_LEN  = 5;
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
-const charEl       = document.getElementById('character');
-const charWrapper  = document.getElementById('char-wrapper');
-const answerEl     = document.getElementById('answer');
-const feedbackEl   = document.getElementById('feedback');
-const btnCheck     = document.getElementById('btn-check');
-const btnSkip      = document.getElementById('btn-skip');
-const btnNext      = document.getElementById('btn-next');
-const btnCheckRow  = document.getElementById('btn-check-row');
-const statC        = document.getElementById('stat-correct');
-const statW        = document.getElementById('stat-wrong');
-const rowBadge     = document.getElementById('row-badge');
-const romajiHint   = document.getElementById('romaji-hint');
-const progressBar  = document.getElementById('progress-bar');
+const charEl        = document.getElementById('character');
+const charWrapper   = document.getElementById('char-wrapper');
+const answerEl      = document.getElementById('answer');
+const feedbackEl    = document.getElementById('feedback');
+const btnCheck      = document.getElementById('btn-check');
+const btnSkip       = document.getElementById('btn-skip');
+const btnNext       = document.getElementById('btn-next');
+const btnCheckRow   = document.getElementById('btn-check-row');
+const rowBadge      = document.getElementById('row-badge');
+const romajiHint    = document.getElementById('romaji-hint');
+const choiceFeedback = document.getElementById('choice-feedback');
+const choiceGrid    = document.getElementById('choice-grid');
+const choiceBtnNext = document.getElementById('choice-btn-next');
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function pickRandom() {
   const pool = getActiveKanaPool();
-  let candidates = pool.filter(h => !history.includes(h.char));
-  if (!candidates.length) { history = []; candidates = pool; }
+  let candidates = pool.filter(k => !practiceHistory.includes(k.char));
+  if (!candidates.length) {
+    practiceHistory = [];
+    candidates = pool;
+  }
   const pick = candidates[Math.floor(Math.random() * candidates.length)];
-  history.push(pick.char);
-  if (history.length > HISTORY_LEN) history.shift();
+  practiceHistory.push(pick.char);
+  if (practiceHistory.length > HISTORY_LEN) practiceHistory.shift();
   return pick;
 }
 
-function updateProgress() {
-  const total = stats.correct + stats.wrong;
-  progressBar.style.width = (total === 0 ? 0 : Math.round((stats.correct / total) * 100)) + '%';
+function generateChoices(correct) {
+  const pool = getActiveKanaPool();
+  // Get distractors — different char, ideally different romaji too
+  const distractors = pool
+    .filter(k => k.char !== correct.char)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 3);
+
+  // If pool is too small, pad with duplicates won't happen since we cap at pool size
+  return [...distractors, correct].sort(() => Math.random() - 0.5);
 }
 
 function resetCard() {
+  // Reset typing UI
   answerEl.value         = '';
   answerEl.className     = '';
   answerEl.disabled      = false;
   feedbackEl.textContent = '';
   feedbackEl.className   = 'feedback';
-  charWrapper.className  = 'char-wrapper';
-  romajiHint.textContent = '';
-  romajiHint.classList.remove('visible');
   btnSkip.classList.add('hidden');
   btnCheckRow.style.display = '';
   btnNext.classList.remove('visible');
+
+  // Reset choice UI
+  choiceFeedback.textContent = '';
+  choiceFeedback.className   = 'feedback';
+  choiceGrid.innerHTML       = '';
+  choiceBtnNext.classList.remove('visible');
+
+  // Reset shared elements
+  charWrapper.className  = 'char-wrapper';
+  romajiHint.textContent = '';
+  romajiHint.classList.remove('visible');
 }
 
 function showNewChar() {
@@ -359,15 +372,21 @@ function showNewChar() {
 
     charEl.textContent = current.char;
     charEl.classList.remove('hide', 'appear');
-    void charEl.offsetWidth;
+    void charEl.offsetWidth;  // force reflow for animation restart
     charEl.classList.add('appear');
 
     rowBadge.textContent = current.row;
     resetCard();
-    answerEl.focus();
+
+    if (settings.mode === 'typing') {
+      answerEl.focus();
+    } else {
+      buildChoiceGrid();
+    }
   }, 180);
 }
 
+// ── Typing Mode ───────────────────────────────────────────────────────────────
 function checkAnswer() {
   if (answered) return;
   const val = answerEl.value.trim().toLowerCase();
@@ -380,7 +399,6 @@ function checkAnswer() {
   if (current.romaji.includes(val)) {
     playCorrectSound();
     answered = true;
-    stats.correct++; statC.textContent = stats.correct;
     feedbackEl.innerHTML = '<span>✓</span> Correct!';
     feedbackEl.className = 'feedback correct';
     answerEl.classList.add('correct-input');
@@ -392,14 +410,16 @@ function checkAnswer() {
   } else {
     playWrongSound();
     wrongCount++;
-    stats.wrong++; statW.textContent = stats.wrong;
-    feedbackEl.innerHTML = '<span>✗</span> Salah, coba lagi';
+    feedbackEl.innerHTML = '<span>✗</span> Try again';
     feedbackEl.className = 'feedback incorrect';
-    answerEl.classList.remove('correct-input');
     answerEl.classList.add('incorrect-input', 'shake');
     charWrapper.classList.add('incorrect');
-    answerEl.addEventListener('animationend', () => answerEl.classList.remove('shake'), { once: true });
+    answerEl.addEventListener('animationend', () => {
+      answerEl.classList.remove('shake');
+    }, { once: true });
+
     if (wrongCount >= 1) btnSkip.classList.remove('hidden');
+
     setTimeout(() => {
       answerEl.classList.remove('incorrect-input');
       charWrapper.classList.remove('incorrect');
@@ -407,10 +427,10 @@ function checkAnswer() {
       answerEl.focus();
     }, 700);
   }
-  updateProgress();
 }
 
 function skipChar() {
+  answered = true;
   romajiHint.textContent = '→ ' + current.romaji[0];
   romajiHint.classList.add('visible');
   feedbackEl.innerHTML = '↷ Skipped — answer: <strong>' + current.romaji[0] + '</strong>';
@@ -420,17 +440,69 @@ function skipChar() {
   setTimeout(() => showNewChar(), 1400);
 }
 
+// ── Multiple Choice Mode ──────────────────────────────────────────────────────
+function buildChoiceGrid() {
+  const choices = generateChoices(current);
+  choiceGrid.innerHTML = '';
+
+  choices.forEach(choice => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `
+      <span class="choice-kana">${choice.char}</span>
+      <span class="choice-romaji">${choice.romaji[0]}</span>
+    `;
+    btn.addEventListener('click', () => handleChoiceClick(btn, choice));
+    choiceGrid.appendChild(btn);
+  });
+}
+
+function handleChoiceClick(btn, choice) {
+  if (answered) return;
+  answered = true;
+
+  const isCorrect = choice.char === current.char;
+
+  // Disable all buttons
+  choiceGrid.querySelectorAll('.choice-btn').forEach(b => {
+    b.disabled = true;
+    // Highlight correct answer regardless
+    const kana = b.querySelector('.choice-kana').textContent;
+    if (kana === current.char) {
+      b.classList.add('correct-choice');
+    }
+  });
+
+  if (isCorrect) {
+    playCorrectSound();
+    btn.classList.add('correct-choice');
+    choiceFeedback.innerHTML = '<span>✓</span> Correct!';
+    choiceFeedback.className = 'feedback correct';
+    charWrapper.classList.add('correct');
+  } else {
+    playWrongSound();
+    btn.classList.add('incorrect-choice');
+    choiceFeedback.innerHTML = '<span>✗</span> Not quite — it\'s <strong>' + current.romaji[0] + '</strong>';
+    choiceFeedback.className = 'feedback incorrect';
+    charWrapper.classList.add('incorrect');
+  }
+
+  romajiHint.textContent = current.romaji[0];
+  romajiHint.classList.add('visible');
+  choiceBtnNext.classList.add('visible');
+}
+
 // ── Events ────────────────────────────────────────────────────────────────────
 btnCheck.addEventListener('click', checkAnswer);
 btnSkip.addEventListener('click', skipChar);
 btnNext.addEventListener('click', showNewChar);
+choiceBtnNext.addEventListener('click', showNewChar);
 
 answerEl.addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-    if (answered) showNewChar();
-    else checkAnswer();
-  }
+  if (e.key !== 'Enter') return;
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  if (answered) showNewChar();
+  else checkAnswer();
 });
 
 document.addEventListener('pointerdown', () => {
@@ -438,5 +510,9 @@ document.addEventListener('pointerdown', () => {
 }, { once: true });
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeSettings();
+  if (e.key === 'Escape') goToMenu();
 });
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+initSettingsUI();
+buildChart('basic');
