@@ -402,17 +402,6 @@ body::before {
   border-radius: 4px; padding: 2px 7px;
 }
 
-/* progress */
-.progress-bar-wrap {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  height: 3px; background: var(--paper-deep); z-index: 30;
-}
-.progress-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--jade), var(--vermillion));
-  transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
-  border-radius: 0 2px 2px 0;
-}
 
 /* ══ SETTINGS MODAL ══ */
 .settings-overlay {
