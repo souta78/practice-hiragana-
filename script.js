@@ -10,8 +10,9 @@ function playCorrectSound() {
   try {
     const ctx = getAudioCtx();
     const t = ctx.currentTime;
-    [523.25, 659.25].forEach((freq, i) => {
-      const osc  = ctx.createOscillator();
+    const freqs = [523.25, 659.25];
+    freqs.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
       gain.connect(ctx.destination);
@@ -30,7 +31,7 @@ function playWrongSound() {
   try {
     const ctx = getAudioCtx();
     const t = ctx.currentTime;
-    const osc  = ctx.createOscillator();
+    const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -152,6 +153,7 @@ const COMBINATION_ROWS = [
   ]},
 ];
 
+// All grouped rows for chart rendering
 const ALL_ROW_GROUPS = {
   basic:       BASIC_ROWS,
   dakuten:     DAKUTEN_ROWS,
@@ -165,9 +167,9 @@ const settings = {
   dakuten:     false,
   handakuten:  false,
   combination: false,
-  mode:        'typing',   // 'typing' | 'choice'
 };
 
+// Load from localStorage
 try {
   const saved = JSON.parse(localStorage.getItem('hiragana-settings'));
   if (saved) Object.assign(settings, saved);
@@ -180,7 +182,7 @@ function getActiveKanaPool() {
     ...(settings.handakuten  ? HANDAKUTEN_ROWS   : []),
     ...(settings.combination ? COMBINATION_ROWS  : []),
   ];
-  return rows.flatMap(r => r.chars.map(c => ({ ...c, row: r.name })));
+  return rows.flatMap(r => r.chars.map(c => ({...c, row: r.name})));
 }
 
 function applySettings() {
@@ -189,80 +191,19 @@ function applySettings() {
   settings.handakuten  = document.getElementById('cfg-handakuten').checked;
   settings.combination = document.getElementById('cfg-combination').checked;
 
-  // Ensure at least one group is selected
-  if (!Object.values(settings).some(v => v === true)) {
+  // Ensure at least one is checked
+  const anyOn = Object.values(settings).some(Boolean);
+  if (!anyOn) {
     settings.basic = true;
     document.getElementById('cfg-basic').checked = true;
   }
 
-  saveSettings();
-  updatePoolInfo();
-}
-
-function setMode(mode) {
-  settings.mode = mode;
-  document.getElementById('mode-btn-typing').classList.toggle('active', mode === 'typing');
-  document.getElementById('mode-btn-choice').classList.toggle('active', mode === 'choice');
-  saveSettings();
-}
-
-function saveSettings() {
   try { localStorage.setItem('hiragana-settings', JSON.stringify(settings)); } catch(e) {}
-}
 
-// ── Practice settings overlay ─────────────────────────────────────────────────
-function openPracticeSettings() {
-  // Sync checkboxes with current state
-  document.getElementById('pcfg-basic').checked       = settings.basic;
-  document.getElementById('pcfg-dakuten').checked     = settings.dakuten;
-  document.getElementById('pcfg-handakuten').checked  = settings.handakuten;
-  document.getElementById('pcfg-combination').checked = settings.combination;
-  // Update pool count label
-  const pool = getActiveKanaPool();
-  document.getElementById('psettings-pool-info').textContent = pool.length + ' characters in practice pool';
+  // Reset history when pool changes
+  history = [];
 
-  const overlay = document.getElementById('psettings-overlay');
-  overlay.classList.remove('hidden');
-  requestAnimationFrame(() => overlay.classList.add('visible'));
-}
-
-function closePracticeSettings() {
-  const overlay = document.getElementById('psettings-overlay');
-  overlay.classList.remove('visible');
-  setTimeout(() => overlay.classList.add('hidden'), 250);
-}
-
-function closePracticeSettingsBackdrop(e) {
-  if (e.target === document.getElementById('psettings-overlay')) closePracticeSettings();
-}
-
-function applyPracticeSettings() {
-  settings.basic       = document.getElementById('pcfg-basic').checked;
-  settings.dakuten     = document.getElementById('pcfg-dakuten').checked;
-  settings.handakuten  = document.getElementById('pcfg-handakuten').checked;
-  settings.combination = document.getElementById('pcfg-combination').checked;
-
-  // Ensure at least one group stays active
-  if (!settings.basic && !settings.dakuten && !settings.handakuten && !settings.combination) {
-    settings.basic = true;
-    document.getElementById('pcfg-basic').checked = true;
-  }
-
-  saveSettings();
-
-  // Keep menu checkboxes in sync
-  document.getElementById('cfg-basic').checked       = settings.basic;
-  document.getElementById('cfg-dakuten').checked     = settings.dakuten;
-  document.getElementById('cfg-handakuten').checked  = settings.handakuten;
-  document.getElementById('cfg-combination').checked = settings.combination;
-
-  const pool = getActiveKanaPool();
-  document.getElementById('psettings-pool-info').textContent = pool.length + ' characters in practice pool';
   updatePoolInfo();
-
-  // Reset and show new character with updated pool
-  practiceHistory = [];
-  showNewChar();
 }
 
 function updatePoolInfo() {
@@ -271,18 +212,34 @@ function updatePoolInfo() {
   if (el) el.textContent = pool.length + ' characters in practice pool';
 }
 
-// Apply saved mode to buttons on page load
-function initSettingsUI() {
+// ── Settings modal ────────────────────────────────────────────────────────────
+function openSettings() {
+  // Sync checkboxes with current state
   document.getElementById('cfg-basic').checked       = settings.basic;
   document.getElementById('cfg-dakuten').checked     = settings.dakuten;
   document.getElementById('cfg-handakuten').checked  = settings.handakuten;
   document.getElementById('cfg-combination').checked = settings.combination;
-  document.getElementById('mode-btn-typing').classList.toggle('active', settings.mode === 'typing');
-  document.getElementById('mode-btn-choice').classList.toggle('active', settings.mode === 'choice');
   updatePoolInfo();
+  document.getElementById('settings-overlay').classList.remove('hidden');
+  // trigger animation
+  requestAnimationFrame(() => {
+    document.getElementById('settings-overlay').classList.add('visible');
+  });
+}
+
+function closeSettings() {
+  const overlay = document.getElementById('settings-overlay');
+  overlay.classList.remove('visible');
+  setTimeout(() => overlay.classList.add('hidden'), 250);
+}
+
+function closeSettingsOnBackdrop(e) {
+  if (e.target === document.getElementById('settings-overlay')) closeSettings();
 }
 
 // ── Build chart ───────────────────────────────────────────────────────────────
+let currentChartGroup = 'basic';
+
 function buildChart(groupKey) {
   const rows = ALL_ROW_GROUPS[groupKey];
   const container = document.getElementById('chart-rows');
@@ -292,7 +249,7 @@ function buildChart(groupKey) {
     const group = document.createElement('div');
     group.className = 'row-group' + (ri === 0 ? ' open' : '');
 
-    const preview = row.chars.slice(0, 4).map(c => c.char).join('') + (row.chars.length > 4 ? '…' : '');
+    const preview = row.chars.slice(0,4).map(c=>c.char).join('') + (row.chars.length > 4 ? '…' : '');
 
     group.innerHTML = `
       <div class="row-header" onclick="this.parentElement.classList.toggle('open')">
@@ -306,8 +263,8 @@ function buildChart(groupKey) {
         </div>
       </div>
       <div class="row-body">
-        ${row.chars.map((c, i) => `
-          <div class="kana-card" style="animation-delay:${i * 25}ms">
+        ${row.chars.map((c,i)=>`
+          <div class="kana-card" style="animation-delay:${i*25}ms">
             <span class="kana">${c.char}</span>
             <span class="roma">${c.romaji[0]}</span>
           </div>
@@ -321,24 +278,17 @@ function buildChart(groupKey) {
 function switchChartTab(btn, groupKey) {
   document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
+  currentChartGroup = groupKey;
   buildChart(groupKey);
 }
+
+// Initial chart build
+buildChart('basic');
 
 // ── Screen switching ──────────────────────────────────────────────────────────
 function startPractice() {
   document.getElementById('screen-menu').classList.add('hidden');
   document.getElementById('screen-practice').classList.remove('hidden');
-
-  // Update mode pill
-  document.getElementById('mode-pill').textContent =
-    settings.mode === 'choice' ? 'Multiple Choice' : 'Typing';
-
-  // Show correct UI for mode
-  document.getElementById('typing-ui').classList.toggle('hidden', settings.mode !== 'typing');
-  document.getElementById('choice-ui').classList.toggle('hidden', settings.mode !== 'choice');
-
-  // Reset practice history
-  practiceHistory = [];
   showNewChar();
 }
 
@@ -347,75 +297,55 @@ function goToMenu() {
   document.getElementById('screen-menu').classList.remove('hidden');
 }
 
-// ── Practice State ────────────────────────────────────────────────────────────
-let current        = null;
-let answered       = false;
-let wrongCount     = 0;
-let practiceHistory = [];
-const HISTORY_LEN  = 5;
+// ── State ─────────────────────────────────────────────────────────────────────
+let current    = null;
+let answered   = false;
+let wrongCount = 0;
+let stats      = { correct: 0, wrong: 0 };
+let history    = [];
+const HISTORY_LEN = 5;
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
-const charEl        = document.getElementById('character');
-const charWrapper   = document.getElementById('char-wrapper');
-const answerEl      = document.getElementById('answer');
-const feedbackEl    = document.getElementById('feedback');
-const btnCheck      = document.getElementById('btn-check');
-const btnSkip       = document.getElementById('btn-skip');
-const btnNext       = document.getElementById('btn-next');
-const btnCheckRow   = document.getElementById('btn-check-row');
-const rowBadge      = document.getElementById('row-badge');
-const romajiHint    = document.getElementById('romaji-hint');
-const choiceFeedback = document.getElementById('choice-feedback');
-const choiceGrid    = document.getElementById('choice-grid');
-const choiceBtnNext = document.getElementById('choice-btn-next');
+const charEl       = document.getElementById('character');
+const charWrapper  = document.getElementById('char-wrapper');
+const answerEl     = document.getElementById('answer');
+const feedbackEl   = document.getElementById('feedback');
+const btnCheck     = document.getElementById('btn-check');
+const btnSkip      = document.getElementById('btn-skip');
+const btnNext      = document.getElementById('btn-next');
+const btnCheckRow  = document.getElementById('btn-check-row');
+const rowBadge     = document.getElementById('row-badge');
+const romajiHint   = document.getElementById('romaji-hint');
+const progressBar  = document.getElementById('progress-bar');
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function pickRandom() {
   const pool = getActiveKanaPool();
-  let candidates = pool.filter(k => !practiceHistory.includes(k.char));
-  if (!candidates.length) {
-    practiceHistory = [];
-    candidates = pool;
-  }
+  let candidates = pool.filter(h => !history.includes(h.char));
+  if (!candidates.length) { history = []; candidates = pool; }
   const pick = candidates[Math.floor(Math.random() * candidates.length)];
-  practiceHistory.push(pick.char);
-  if (practiceHistory.length > HISTORY_LEN) practiceHistory.shift();
+  history.push(pick.char);
+  if (history.length > HISTORY_LEN) history.shift();
   return pick;
 }
 
-function generateChoices(correct) {
-  const pool = getActiveKanaPool();
-  // Get distractors — different char, ideally different romaji too
-  const distractors = pool
-    .filter(k => k.char !== correct.char)
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 3);
-
-  // If pool is too small, pad with duplicates won't happen since we cap at pool size
-  return [...distractors, correct].sort(() => Math.random() - 0.5);
+function updateProgress() {
+  const total = stats.correct + stats.wrong;
+  progressBar.style.width = (total === 0 ? 0 : Math.round((stats.correct / total) * 100)) + '%';
 }
 
 function resetCard() {
-  // Reset typing UI
   answerEl.value         = '';
   answerEl.className     = '';
   answerEl.disabled      = false;
   feedbackEl.textContent = '';
   feedbackEl.className   = 'feedback';
-  btnSkip.classList.add('hidden');
-  btnCheckRow.style.display = '';
-  btnNext.classList.remove('visible');
-
-  // Reset choice UI
-  choiceFeedback.textContent = '';
-  choiceFeedback.className   = 'feedback';
-  choiceGrid.innerHTML       = '';
-  choiceBtnNext.classList.remove('visible');
-
-  // Reset shared elements
   charWrapper.className  = 'char-wrapper';
   romajiHint.textContent = '';
   romajiHint.classList.remove('visible');
+  btnSkip.classList.add('hidden');
+  btnCheckRow.style.display = '';
+  btnNext.classList.remove('visible');
 }
 
 function showNewChar() {
@@ -427,21 +357,15 @@ function showNewChar() {
 
     charEl.textContent = current.char;
     charEl.classList.remove('hide', 'appear');
-    void charEl.offsetWidth;  // force reflow for animation restart
+    void charEl.offsetWidth;
     charEl.classList.add('appear');
 
     rowBadge.textContent = current.row;
     resetCard();
-
-    if (settings.mode === 'typing') {
-      answerEl.focus();
-    } else {
-      buildChoiceGrid();
-    }
+    answerEl.focus();
   }, 180);
 }
 
-// ── Typing Mode ───────────────────────────────────────────────────────────────
 function checkAnswer() {
   if (answered) return;
   const val = answerEl.value.trim().toLowerCase();
@@ -454,6 +378,7 @@ function checkAnswer() {
   if (current.romaji.includes(val)) {
     playCorrectSound();
     answered = true;
+    stats.correct++;
     feedbackEl.innerHTML = '<span>✓</span> Correct!';
     feedbackEl.className = 'feedback correct';
     answerEl.classList.add('correct-input');
@@ -465,16 +390,14 @@ function checkAnswer() {
   } else {
     playWrongSound();
     wrongCount++;
-    feedbackEl.innerHTML = '<span>✗</span> Try again';
+    stats.wrong++;
+    feedbackEl.innerHTML = '<span>✗</span> Salah, coba lagi';
     feedbackEl.className = 'feedback incorrect';
+    answerEl.classList.remove('correct-input');
     answerEl.classList.add('incorrect-input', 'shake');
     charWrapper.classList.add('incorrect');
-    answerEl.addEventListener('animationend', () => {
-      answerEl.classList.remove('shake');
-    }, { once: true });
-
+    answerEl.addEventListener('animationend', () => answerEl.classList.remove('shake'), { once: true });
     if (wrongCount >= 1) btnSkip.classList.remove('hidden');
-
     setTimeout(() => {
       answerEl.classList.remove('incorrect-input');
       charWrapper.classList.remove('incorrect');
@@ -482,10 +405,10 @@ function checkAnswer() {
       answerEl.focus();
     }, 700);
   }
+  updateProgress();
 }
 
 function skipChar() {
-  answered = true;
   romajiHint.textContent = '→ ' + current.romaji[0];
   romajiHint.classList.add('visible');
   feedbackEl.innerHTML = '↷ Skipped — answer: <strong>' + current.romaji[0] + '</strong>';
@@ -495,62 +418,17 @@ function skipChar() {
   setTimeout(() => showNewChar(), 1400);
 }
 
-// ── Multiple Choice Mode ──────────────────────────────────────────────────────
-function buildChoiceGrid() {
-  const choices = generateChoices(current);
-  choiceGrid.innerHTML = '';
-
-  choices.forEach(choice => {
-    const btn = document.createElement('button');
-    btn.className = 'choice-btn';
-    btn.dataset.char = choice.char;
-    btn.innerHTML = `<span class="choice-romaji">${choice.romaji[0]}</span>`;
-    btn.addEventListener('click', () => handleChoiceClick(btn, choice));
-    choiceGrid.appendChild(btn);
-  });
-}
-
-function handleChoiceClick(btn, choice) {
-  if (answered) return;
-  answered = true;
-
-  const isCorrect = choice.char === current.char;
-
-  // Disable all buttons and highlight the correct one
-  choiceGrid.querySelectorAll('.choice-btn').forEach(b => {
-    b.disabled = true;
-    if (b.dataset.char === current.char) b.classList.add('correct-choice');
-  });
-
-  if (isCorrect) {
-    playCorrectSound();
-    choiceFeedback.innerHTML = '<span>✓</span> Correct!';
-    choiceFeedback.className = 'feedback correct';
-    charWrapper.classList.add('correct');
-  } else {
-    playWrongSound();
-    btn.classList.add('incorrect-choice');
-    choiceFeedback.innerHTML = '<span>✗</span> Not quite — it\'s <strong>' + current.romaji[0] + '</strong>';
-    choiceFeedback.className = 'feedback incorrect';
-    charWrapper.classList.add('incorrect');
-  }
-
-  romajiHint.textContent = current.romaji[0];
-  romajiHint.classList.add('visible');
-  choiceBtnNext.classList.add('visible');
-}
-
 // ── Events ────────────────────────────────────────────────────────────────────
 btnCheck.addEventListener('click', checkAnswer);
 btnSkip.addEventListener('click', skipChar);
 btnNext.addEventListener('click', showNewChar);
-choiceBtnNext.addEventListener('click', showNewChar);
 
 answerEl.addEventListener('keydown', e => {
-  if (e.key !== 'Enter') return;
-  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-  if (answered) showNewChar();
-  else checkAnswer();
+  if (e.key === 'Enter') {
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    if (answered) showNewChar();
+    else checkAnswer();
+  }
 });
 
 document.addEventListener('pointerdown', () => {
@@ -558,13 +436,5 @@ document.addEventListener('pointerdown', () => {
 }, { once: true });
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    const po = document.getElementById('psettings-overlay');
-    if (po && !po.classList.contains('hidden')) { closePracticeSettings(); return; }
-    goToMenu();
-  }
+  if (e.key === 'Escape') closeSettings();
 });
-
-// ── Init ──────────────────────────────────────────────────────────────────────
-initSettingsUI();
-buildChart('basic');
