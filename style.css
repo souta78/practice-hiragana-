@@ -1,5 +1,9 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+* {
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none;     /* IE */
+  user-select: none;
+}
 :root {
   --paper:      #faf7f2;
   --paper-deep: #f0ebe0;
