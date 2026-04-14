@@ -562,31 +562,156 @@ document.addEventListener('keydown', e => {
 });
 // ── Quiz Dataset ──────────────────────────────────────────────────────────────
 const QUIZ_DATA = [
-  { kana: 'ねこ',    romaji: 'neko',      meaning: 'cat' },
-  { kana: 'いぬ',    romaji: 'inu',       meaning: 'dog' },
-  { kana: 'みず',    romaji: 'mizu',      meaning: 'water' },
-  { kana: 'たべる',  romaji: 'taberu',    meaning: 'eat' },
-  { kana: 'のむ',    romaji: 'nomu',      meaning: 'drink' },
-  { kana: 'あさ',    romaji: 'asa',       meaning: 'morning' },
-  { kana: 'よる',    romaji: 'yoru',      meaning: 'night' },
-  { kana: 'はな',    romaji: 'hana',      meaning: 'flower' },
-  { kana: 'やま',    romaji: 'yama',      meaning: 'mountain' },
-  { kana: 'かわ',    romaji: 'kawa',      meaning: 'river' },
-  { kana: 'そら',    romaji: 'sora',      meaning: 'sky' },
-  { kana: 'ほん',    romaji: 'hon',       meaning: 'book' },
-  { kana: 'てがみ',  romaji: 'tegami',    meaning: 'letter' },
-  { kana: 'くるま',  romaji: 'kuruma',    meaning: 'car' },
-  { kana: 'とり',    romaji: 'tori',      meaning: 'bird' },
-  { kana: 'さかな',  romaji: 'sakana',    meaning: 'fish' },
-  { kana: 'きもの',  romaji: 'kimono',    meaning: 'kimono' },
-  { kana: 'むすめ',  romaji: 'musume',    meaning: 'daughter' },
-  { kana: 'ちち',    romaji: 'chichi',    meaning: 'father' },
-  { kana: 'はは',    romaji: 'haha',      meaning: 'mother' },
-  { kana: 'ともだち',romaji: 'tomodachi', meaning: 'friend' },
-  { kana: 'がっこう',romaji: 'gakkou',    meaning: 'school' },
-  { kana: 'でんしゃ',romaji: 'densha',    meaning: 'train' },
-  { kana: 'たかい',  romaji: 'takai',     meaning: 'tall / expensive' },
-  { kana: 'あおい',  romaji: 'aoi',       meaning: 'blue' },
+  { kana: 'ねこ', romaji: 'neko', meaning: 'cat' },
+  { kana: 'いぬ', romaji: 'inu', meaning: 'dog' },
+  { kana: 'みず', romaji: 'mizu', meaning: 'water' },
+  { kana: 'たべる', romaji: 'taberu', meaning: 'eat' },
+  { kana: 'のむ', romaji: 'nomu', meaning: 'drink' },
+  { kana: 'あさ', romaji: 'asa', meaning: 'morning' },
+  { kana: 'よる', romaji: 'yoru', meaning: 'night' },
+  { kana: 'はな', romaji: 'hana', meaning: 'flower' },
+  { kana: 'やま', romaji: 'yama', meaning: 'mountain' },
+  { kana: 'かわ', romaji: 'kawa', meaning: 'river' },
+  { kana: 'そら', romaji: 'sora', meaning: 'sky' },
+  { kana: 'ほん', romaji: 'hon', meaning: 'book' },
+  { kana: 'てがみ', romaji: 'tegami', meaning: 'letter' },
+  { kana: 'くるま', romaji: 'kuruma', meaning: 'car' },
+  { kana: 'とり', romaji: 'tori', meaning: 'bird' },
+  { kana: 'さかな', romaji: 'sakana', meaning: 'fish' },
+  { kana: 'きもの', romaji: 'kimono', meaning: 'kimono' },
+  { kana: 'むすめ', romaji: 'musume', meaning: 'daughter' },
+  { kana: 'ちち', romaji: 'chichi', meaning: 'father' },
+  { kana: 'はは', romaji: 'haha', meaning: 'mother' },
+  { kana: 'ともだち', romaji: 'tomodachi', meaning: 'friend' },
+  { kana: 'がっこう', romaji: 'gakkou', meaning: 'school' },
+  { kana: 'でんしゃ', romaji: 'densha', meaning: 'train' },
+  { kana: 'たかい', romaji: 'takai', meaning: 'tall / expensive' },
+  { kana: 'あおい', romaji: 'aoi', meaning: 'blue' },
+
+  // 🔥 tambahan
+  { kana: 'あか', romaji: 'aka', meaning: 'red' },
+  { kana: 'しろ', romaji: 'shiro', meaning: 'white' },
+  { kana: 'くろ', romaji: 'kuro', meaning: 'black' },
+  { kana: 'みどり', romaji: 'midori', meaning: 'green' },
+
+  { kana: 'ひと', romaji: 'hito', meaning: 'person' },
+  { kana: 'こども', romaji: 'kodomo', meaning: 'child' },
+  { kana: 'おとこ', romaji: 'otoko', meaning: 'man' },
+  { kana: 'おんな', romaji: 'onna', meaning: 'woman' },
+
+  { kana: 'いえ', romaji: 'ie', meaning: 'house' },
+  { kana: 'へや', romaji: 'heya', meaning: 'room' },
+  { kana: 'つくえ', romaji: 'tsukue', meaning: 'desk' },
+  { kana: 'いす', romaji: 'isu', meaning: 'chair' },
+
+  { kana: 'パン', romaji: 'pan', meaning: 'bread' },
+  { kana: 'ごはん', romaji: 'gohan', meaning: 'rice / meal' },
+  { kana: 'りんご', romaji: 'ringo', meaning: 'apple' },
+  { kana: 'たまご', romaji: 'tamago', meaning: 'egg' },
+
+  { kana: 'いく', romaji: 'iku', meaning: 'go' },
+  { kana: 'くる', romaji: 'kuru', meaning: 'come' },
+  { kana: 'みる', romaji: 'miru', meaning: 'see' },
+  { kana: 'きく', romaji: 'kiku', meaning: 'listen / ask' },
+  { kana: 'いう', romaji: 'iu', meaning: 'say' },
+
+  { kana: 'はやい', romaji: 'hayai', meaning: 'fast / early' },
+  { kana: 'おそい', romaji: 'osoi', meaning: 'slow / late' },
+  { kana: 'おおきい', romaji: 'ookii', meaning: 'big' },
+  { kana: 'ちいさい', romaji: 'chiisai', meaning: 'small' },
+
+  { kana: 'ここ', romaji: 'koko', meaning: 'here' },
+  { kana: 'そこ', romaji: 'soko', meaning: 'there' },
+  { kana: 'あそこ', romaji: 'asoko', meaning: 'over there' },
+
+  { kana: 'なに', romaji: 'nani', meaning: 'what' },
+  { kana: 'だれ', romaji: 'dare', meaning: 'who' },
+  { kana: 'いつ', romaji: 'itsu', meaning: 'when' },
+
+  { kana: 'はい', romaji: 'hai', meaning: 'yes' },
+  { kana: 'いいえ', romaji: 'iie', meaning: 'no' },
+
+  { kana: 'ありがとう', romaji: 'arigatou', meaning: 'thank you' },
+  { kana: 'ごめん', romaji: 'gomen', meaning: 'sorry' },
+  // 🔥 tambahan (lanjutan, TANPA duplikat)
+
+{ kana: 'ゆき', romaji: 'yuki', meaning: 'snow' },
+{ kana: 'あめ', romaji: 'ame', meaning: 'rain' },
+{ kana: 'かぜ', romaji: 'kaze', meaning: 'wind' },
+{ kana: 'たいよう', romaji: 'taiyou', meaning: 'sun' },
+{ kana: 'つき', romaji: 'tsuki', meaning: 'moon' },
+
+{ kana: 'うみ', romaji: 'umi', meaning: 'sea' },
+{ kana: 'みち', romaji: 'michi', meaning: 'road' },
+{ kana: 'まち', romaji: 'machi', meaning: 'town' },
+{ kana: 'くに', romaji: 'kuni', meaning: 'country' },
+
+{ kana: 'かばん', romaji: 'kaban', meaning: 'bag' },
+{ kana: 'くつ', romaji: 'kutsu', meaning: 'shoes' },
+{ kana: 'ぼうし', romaji: 'boushi', meaning: 'hat' },
+{ kana: 'とけい', romaji: 'tokei', meaning: 'clock / watch' },
+
+{ kana: 'えき', romaji: 'eki', meaning: 'station' },
+{ kana: 'みせ', romaji: 'mise', meaning: 'shop' },
+{ kana: 'ホテル', romaji: 'hoteru', meaning: 'hotel' },
+
+{ kana: 'せんせい', romaji: 'sensei', meaning: 'teacher' },
+{ kana: 'がくせい', romaji: 'gakusei', meaning: 'student' },
+{ kana: 'いしゃ', romaji: 'isha', meaning: 'doctor' },
+
+{ kana: 'べんきょう', romaji: 'benkyou', meaning: 'study' },
+{ kana: 'しごと', romaji: 'shigoto', meaning: 'work' },
+{ kana: 'やすみ', romaji: 'yasumi', meaning: 'rest / holiday' },
+
+{ kana: 'あう', romaji: 'au', meaning: 'meet' },
+{ kana: 'かう', romaji: 'kau', meaning: 'buy' },
+{ kana: 'うる', romaji: 'uru', meaning: 'sell' },
+{ kana: 'まつ', romaji: 'matsu', meaning: 'wait' },
+{ kana: 'はなす', romaji: 'hanasu', meaning: 'speak' },
+
+{ kana: 'あたらしい', romaji: 'atarashii', meaning: 'new' },
+{ kana: 'ふるい', romaji: 'furui', meaning: 'old' },
+{ kana: 'あつい', romaji: 'atsui', meaning: 'hot' },
+{ kana: 'さむい', romaji: 'samui', meaning: 'cold (weather)' },
+{ kana: 'つめたい', romaji: 'tsumetai', meaning: 'cold (touch)' },
+
+{ kana: 'おいしい', romaji: 'oishii', meaning: 'delicious' },
+{ kana: 'まずい', romaji: 'mazui', meaning: 'bad taste' },
+
+{ kana: 'たくさん', romaji: 'takusan', meaning: 'many / a lot' },
+{ kana: 'すこし', romaji: 'sukoshi', meaning: 'a little' },
+{ kana: 'ぜんぶ', romaji: 'zenbu', meaning: 'all' },
+
+{ kana: 'そして', romaji: 'soshite', meaning: 'and then' },
+{ kana: 'でも', romaji: 'demo', meaning: 'but' },
+
+{ kana: 'なか', romaji: 'naka', meaning: 'inside' },
+{ kana: 'そと', romaji: 'soto', meaning: 'outside' },
+{ kana: 'うえ', romaji: 'ue', meaning: 'above' },
+{ kana: 'した', romaji: 'shita', meaning: 'below' },
+{ kana: 'まえ', romaji: 'mae', meaning: 'front / before' },
+{ kana: 'うしろ', romaji: 'ushiro', meaning: 'behind' },
+
+{ kana: 'ひだり', romaji: 'hidari', meaning: 'left' },
+{ kana: 'みぎ', romaji: 'migi', meaning: 'right' },
+
+{ kana: 'きょう', romaji: 'kyou', meaning: 'today' },
+{ kana: 'あした', romaji: 'ashita', meaning: 'tomorrow' },
+{ kana: 'きのう', romaji: 'kinou', meaning: 'yesterday' },
+
+{ kana: 'じかん', romaji: 'jikan', meaning: 'time' },
+{ kana: 'いま', romaji: 'ima', meaning: 'now' },
+
+{ kana: 'おなじ', romaji: 'onaji', meaning: 'same' },
+{ kana: 'ちがう', romaji: 'chigau', meaning: 'different' },
+
+{ kana: 'すき', romaji: 'suki', meaning: 'like' },
+{ kana: 'きらい', romaji: 'kirai', meaning: 'dislike' },
+
+{ kana: 'できる', romaji: 'dekiru', meaning: 'can / able to' },
+{ kana: 'わかる', romaji: 'wakaru', meaning: 'understand' },
+{ kana: 'おぼえる', romaji: 'oboeru', meaning: 'remember / learn' },
+{ kana: 'わすれる', romaji: 'wasureru', meaning: 'forget' },
 ];
 
 // ── Quiz state ────────────────────────────────────────────────────────────────
