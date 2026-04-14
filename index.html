@@ -22,6 +22,7 @@
       <p class="hero-sub">Tap any group below to see the characters and their romaji.<br>When you're ready, start practicing!</p>
       <div class="hero-buttons">
         <button class="btn-start" onclick="startPractice()">Start Practice →</button>
+        <button class="btn-start btn-start--outline" onclick="openQuiz()">Quiz →</button>
         <button class="btn-start btn-start--outline" onclick="openSettings()">Settings →</button>
       </div>
       
@@ -96,6 +97,56 @@
   </div>
 
   <!-- ══════════════════════════
+       SCREEN 3 — QUIZ
+  ══════════════════════════ -->
+  <div class="screen hidden" id="screen-quiz">
+
+    <button class="btn-back" onclick="backToMenuFromQuiz()">← Menu</button>
+
+    <div class="practice-body">
+      <div class="card">
+        <div class="row-badge" id="quiz-badge">Vocabulary Quiz</div>
+
+        <div class="char-wrapper" id="quiz-char-wrapper">
+          <div class="char-ring"></div>
+          <div class="char-ring-outer"></div>
+          <span id="quiz-character">ねこ</span>
+        </div>
+
+        <div class="romaji-hint" id="quiz-romaji-hint"></div>
+
+        <div class="input-row">
+          <input
+            type="text"
+            id="quiz-answer"
+            name="quiz-input-xyz"
+            placeholder="type romaji…"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="none"
+            spellcheck="false"
+            inputmode="latin"
+            enterkeyhint="done"
+          />
+        </div>
+
+        <div class="feedback" id="quiz-feedback" aria-live="polite"></div>
+
+        <div class="btn-row" id="quiz-btn-check-row">
+          <button class="btn btn-check" id="quiz-btn-check">Check</button>
+        </div>
+
+        <button class="btn btn-next" id="quiz-btn-next">Next →</button>
+
+        <div class="hint-row">
+          <span class="kbd">press <span>Enter</span> to check / continue</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════
        SETTINGS MODAL
   ══════════════════════════ -->
   <div class="settings-overlay hidden" id="settings-overlay" onclick="closeSettingsOnBackdrop(event)">
@@ -110,7 +161,7 @@
         <div class="settings-mode-label">Practice Mode</div>
         <div class="mode-toggle">
           <button class="mode-btn active" id="mode-btn-typing" onclick="setMode('typing')">
-             Typing
+            Typing
           </button>
           <button class="mode-btn" id="mode-btn-multiple" onclick="setMode('multiple')">
             Multiple Choice
