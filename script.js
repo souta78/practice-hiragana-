@@ -560,3 +560,153 @@ document.addEventListener('pointerdown', () => {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeSettings();
 });
+// ── Quiz Dataset ──────────────────────────────────────────────────────────────
+const QUIZ_DATA = [
+  { kana: 'ねこ',    romaji: 'neko',      meaning: 'cat' },
+  { kana: 'いぬ',    romaji: 'inu',       meaning: 'dog' },
+  { kana: 'みず',    romaji: 'mizu',      meaning: 'water' },
+  { kana: 'たべる',  romaji: 'taberu',    meaning: 'eat' },
+  { kana: 'のむ',    romaji: 'nomu',      meaning: 'drink' },
+  { kana: 'あさ',    romaji: 'asa',       meaning: 'morning' },
+  { kana: 'よる',    romaji: 'yoru',      meaning: 'night' },
+  { kana: 'はな',    romaji: 'hana',      meaning: 'flower' },
+  { kana: 'やま',    romaji: 'yama',      meaning: 'mountain' },
+  { kana: 'かわ',    romaji: 'kawa',      meaning: 'river' },
+  { kana: 'そら',    romaji: 'sora',      meaning: 'sky' },
+  { kana: 'ほん',    romaji: 'hon',       meaning: 'book' },
+  { kana: 'てがみ',  romaji: 'tegami',    meaning: 'letter' },
+  { kana: 'くるま',  romaji: 'kuruma',    meaning: 'car' },
+  { kana: 'とり',    romaji: 'tori',      meaning: 'bird' },
+  { kana: 'さかな',  romaji: 'sakana',    meaning: 'fish' },
+  { kana: 'きもの',  romaji: 'kimono',    meaning: 'kimono' },
+  { kana: 'むすめ',  romaji: 'musume',    meaning: 'daughter' },
+  { kana: 'ちち',    romaji: 'chichi',    meaning: 'father' },
+  { kana: 'はは',    romaji: 'haha',      meaning: 'mother' },
+  { kana: 'ともだち',romaji: 'tomodachi', meaning: 'friend' },
+  { kana: 'がっこう',romaji: 'gakkou',    meaning: 'school' },
+  { kana: 'でんしゃ',romaji: 'densha',    meaning: 'train' },
+  { kana: 'たかい',  romaji: 'takai',     meaning: 'tall / expensive' },
+  { kana: 'あおい',  romaji: 'aoi',       meaning: 'blue' },
+];
+
+// ── Quiz state ────────────────────────────────────────────────────────────────
+let quizCurrent  = null;
+let quizAnswered = false;
+let quizHistory  = [];
+
+// DOM refs initialised lazily so they are available after HTML has parsed
+let _quizCharEl, _quizCharWrapper, _quizAnswerEl, _quizFeedbackEl,
+    _quizBtnCheck, _quizBtnNext, _quizBtnCheckRow, _quizRomajiHint;
+
+function initQuizRefs() {
+  if (_quizCharEl) return;
+  _quizCharEl      = document.getElementById('quiz-character');
+  _quizCharWrapper = document.getElementById('quiz-char-wrapper');
+  _quizAnswerEl    = document.getElementById('quiz-answer');
+  _quizFeedbackEl  = document.getElementById('quiz-feedback');
+  _quizBtnCheck    = document.getElementById('quiz-btn-check');
+  _quizBtnNext     = document.getElementById('quiz-btn-next');
+  _quizBtnCheckRow = document.getElementById('quiz-btn-check-row');
+  _quizRomajiHint  = document.getElementById('quiz-romaji-hint');
+
+  _quizBtnCheck.addEventListener('click', checkQuizAnswer);
+  _quizBtnNext.addEventListener('click', showNewQuizWord);
+  _quizAnswerEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      if (quizAnswered) showNewQuizWord();
+      else checkQuizAnswer();
+    }
+  });
+}
+
+function pickQuizWord() {
+  let candidates = QUIZ_DATA.filter(w => !quizHistory.includes(w.kana));
+  if (!candidates.length) { quizHistory = []; candidates = QUIZ_DATA; }
+  const pick = candidates[Math.floor(Math.random() * candidates.length)];
+  quizHistory.push(pick.kana);
+  if (quizHistory.length > 8) quizHistory.shift();
+  return pick;
+}
+
+function resetQuizCard() {
+  _quizAnswerEl.value         = '';
+  _quizAnswerEl.className     = '';
+  _quizAnswerEl.disabled      = false;
+  _quizFeedbackEl.textContent = '';
+  _quizFeedbackEl.className   = 'feedback';
+  _quizCharWrapper.className  = 'char-wrapper';
+  _quizRomajiHint.textContent = '';
+  _quizRomajiHint.classList.remove('visible');
+  _quizBtnNext.classList.remove('visible');
+  _quizBtnCheckRow.style.display = '';
+}
+
+function showNewQuizWord() {
+  _quizCharEl.classList.add('hide');
+  setTimeout(() => {
+    quizCurrent  = pickQuizWord();
+    quizAnswered = false;
+
+    _quizCharEl.textContent = quizCurrent.kana;
+    _quizCharEl.classList.remove('hide', 'appear');
+    void _quizCharEl.offsetWidth;
+    _quizCharEl.classList.add('appear');
+
+    resetQuizCard();
+    _quizAnswerEl.focus();
+  }, 180);
+}
+
+function checkQuizAnswer() {
+  if (quizAnswered) return;
+  const val = _quizAnswerEl.value.trim().toLowerCase();
+  if (!val) {
+    _quizAnswerEl.classList.add('shake');
+    _quizAnswerEl.addEventListener('animationend', () => _quizAnswerEl.classList.remove('shake'), { once: true });
+    return;
+  }
+
+  if (val === quizCurrent.romaji) {
+    playCorrectSound();
+    quizAnswered = true;
+    _quizFeedbackEl.innerHTML = '<span>&#10003;</span> Correct! &mdash; <strong>' + quizCurrent.meaning + '</strong>';
+    _quizFeedbackEl.className = 'feedback correct';
+    _quizAnswerEl.classList.add('correct-input');
+    _quizCharWrapper.classList.add('correct');
+    _quizRomajiHint.textContent = quizCurrent.romaji;
+    _quizRomajiHint.classList.add('visible');
+    _quizBtnCheckRow.style.display = 'none';
+    _quizBtnNext.classList.add('visible');
+  } else {
+    playWrongSound();
+    _quizFeedbackEl.innerHTML = '<span>&#10007;</span> Wrong &mdash; answer: <strong>' + quizCurrent.romaji + '</strong> (' + quizCurrent.meaning + ')';
+    _quizFeedbackEl.className = 'feedback incorrect';
+    _quizAnswerEl.classList.remove('correct-input');
+    _quizAnswerEl.classList.add('incorrect-input', 'shake');
+    _quizCharWrapper.classList.add('incorrect');
+    _quizAnswerEl.addEventListener('animationend', () => _quizAnswerEl.classList.remove('shake'), { once: true });
+    quizAnswered = true;
+    _quizRomajiHint.textContent = quizCurrent.romaji;
+    _quizRomajiHint.classList.add('visible');
+    _quizBtnCheckRow.style.display = 'none';
+    _quizBtnNext.classList.add('visible');
+    setTimeout(() => {
+      _quizAnswerEl.classList.remove('incorrect-input');
+      _quizCharWrapper.classList.remove('incorrect');
+    }, 700);
+  }
+}
+
+// ── Quiz screen switching ─────────────────────────────────────────────────────
+function openQuiz() {
+  document.getElementById('screen-menu').classList.add('hidden');
+  document.getElementById('screen-quiz').classList.remove('hidden');
+  initQuizRefs();
+  showNewQuizWord();
+}
+
+function backToMenuFromQuiz() {
+  document.getElementById('screen-quiz').classList.add('hidden');
+  document.getElementById('screen-menu').classList.remove('hidden');
+}
