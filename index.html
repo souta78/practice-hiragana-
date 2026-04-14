@@ -31,10 +31,10 @@
       <div class="chart-label">Hiragana Chart — click to expand</div>
 
       <div class="chart-tabs">
-        <button class="chart-tab active" onclick="switchChartTab(this,'basic')">Basic</button>
-        <button class="chart-tab" onclick="switchChartTab(this,'dakuten')">Dakuten ゙</button>
-        <button class="chart-tab" onclick="switchChartTab(this,'handakuten')">Handakuten ゚</button>
-        <button class="chart-tab" onclick="switchChartTab(this,'combination')">Combination</button>
+        <button class="chart-tab active" onclick="switchChartTab(this,'basic')">Hiragana Sein</button>
+        <button class="chart-tab" onclick="switchChartTab(this,'dakuten')">Dakuon ゙</button>
+        <button class="chart-tab" onclick="switchChartTab(this,'handakuten')">Handakuon ゚</button>
+        <button class="chart-tab" onclick="switchChartTab(this,'combination')">Yōon</button>
       </div>
 
       <div id="chart-rows"></div>
@@ -76,6 +76,8 @@
 />
         </div>
 
+        <div id="choices" class="choices hidden"></div>
+
         <div class="feedback" id="feedback" aria-live="polite"></div>
 
         <div class="btn-row" id="btn-check-row">
@@ -104,6 +106,20 @@
       </div>
       <p class="settings-sub">Choose which kana appear during practice.</p>
 
+      <div class="settings-mode">
+        <div class="settings-mode-label">Practice Mode</div>
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="mode-btn-typing" onclick="setMode('typing')">
+            &#9000; Typing
+          </button>
+          <button class="mode-btn" id="mode-btn-multiple" onclick="setMode('multiple')">
+            &#9776; Multiple Choice
+          </button>
+        </div>
+      </div>
+
+      <div class="settings-divider"></div>
+
       <div class="settings-options">
 
         <label class="setting-item">
@@ -112,7 +128,7 @@
             <span class="custom-check"></span>
           </div>
           <div class="setting-info">
-            <span class="setting-name">Basic Hiragana</span>
+            <span class="setting-name">Hiragana Sein</span>
             <span class="setting-preview">あ い う え お … ん</span>
           </div>
         </label>
@@ -123,7 +139,7 @@
             <span class="custom-check"></span>
           </div>
           <div class="setting-info">
-            <span class="setting-name">Dakuten <span class="badge-kana">゙</span></span>
+            <span class="setting-name">dakuon <span class="badge-kana">゙</span></span>
             <span class="setting-preview">が ざ だ ば …</span>
           </div>
         </label>
@@ -134,7 +150,7 @@
             <span class="custom-check"></span>
           </div>
           <div class="setting-info">
-            <span class="setting-name">Handakuten <span class="badge-kana">゚</span></span>
+            <span class="setting-name">Handakuon <span class="badge-kana">゚</span></span>
             <span class="setting-preview">ぱ ぴ ぷ ぺ ぽ</span>
           </div>
         </label>
@@ -145,7 +161,7 @@
             <span class="custom-check"></span>
           </div>
           <div class="setting-info">
-            <span class="setting-name">Combination (Yōon)</span>
+            <span class="setting-name">Yōon</span>
             <span class="setting-preview">きゃ しゅ ちょ …</span>
           </div>
         </label>
