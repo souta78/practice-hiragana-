@@ -62,12 +62,18 @@
         <div class="romaji-hint" id="romaji-hint"></div>
 
         <div class="input-row">
-          <input
-            type="text" id="answer"
-            placeholder="type romaji…"
-            autocomplete="off" autocorrect="off"
-            autocapitalize="none" spellcheck="false"
-          />
+<input
+  type="text"
+  id="answer"
+  name="kana-input-xyz"
+  placeholder="type romaji…"
+  autocomplete="off"
+  autocorrect="off"
+  autocapitalize="none"
+  spellcheck="false"
+  inputmode="latin"
+  enterkeyhint="done"
+/>
         </div>
 
         <div class="feedback" id="feedback" aria-live="polite"></div>
