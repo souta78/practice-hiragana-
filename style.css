@@ -1,15 +1,5 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  user-select: none;
-}
 
-input, textarea {
-  user-select: text;
-}
-
-* {
-  -webkit-tap-highlight-color: transparent;
-}
 :root {
   --paper:      #faf7f2;
   --paper-deep: #f0ebe0;
@@ -21,7 +11,17 @@ input, textarea {
   --shadow-sm:  0 2px 8px rgba(26,23,20,0.07);
   --shadow-md:  0 8px 32px rgba(26,23,20,0.10);
 }
+body {
+  user-select: none;
+}
 
+input, textarea {
+  user-select: text;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
 html, body {
   height: 100%;
   overflow: hidden;
@@ -254,7 +254,8 @@ body::before {
 }
 
 /* ══ PRACTICE SCREEN ══ */
-#screen-practice {
+#screen-practice,
+#screen-quiz {
   justify-content: center;
   padding: 0 24px;
 }
@@ -296,7 +297,8 @@ body::before {
 }
 
 
-#character {
+#character,
+#quiz-character {
   font-family: 'Noto Sans JP', sans-serif;
   font-size: 84px; font-weight: 400; line-height: 1;
   color: var(--ink);
@@ -305,7 +307,8 @@ body::before {
   white-space: nowrap;
   letter-spacing: -0.04em;
 }
-#character.hide { opacity: 0; transform: scale(0.88) translateY(8px); }
+#character.hide,
+#quiz-character.hide { opacity: 0; transform: scale(0.88) translateY(8px); }
 
 .romaji-hint {
   font-family: 'DM Mono', monospace;
@@ -318,7 +321,8 @@ body::before {
 
 .input-row { width: 100%; margin-bottom: 14px; }
 
-#answer {
+#answer,
+#quiz-answer {
   width: 100%; background: var(--paper);
   border: 1.5px solid var(--border); border-radius: 12px;
   padding: 13px 18px;
@@ -328,14 +332,18 @@ body::before {
   transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
   caret-color: var(--vermillion);
 }
-#answer::placeholder { color: rgba(107,101,96,0.35); font-size: 14px; }
-#answer:focus {
+#answer::placeholder,
+#quiz-answer::placeholder { color: rgba(107,101,96,0.35); font-size: 14px; }
+#answer:focus,
+#quiz-answer:focus {
   border-color: rgba(26,23,20,0.3);
   box-shadow: 0 0 0 3px rgba(26,23,20,0.05);
   background: white;
 }
-#answer.correct-input  { border-color: var(--jade);       background: #f0faf5; box-shadow: 0 0 0 3px rgba(58,125,94,0.08); }
-#answer.incorrect-input { border-color: var(--vermillion); background: #fff5f5; box-shadow: 0 0 0 3px rgba(201,64,64,0.08); }
+#answer.correct-input,
+#quiz-answer.correct-input  { border-color: var(--jade);       background: #f0faf5; box-shadow: 0 0 0 3px rgba(58,125,94,0.08); }
+#answer.incorrect-input,
+#quiz-answer.incorrect-input { border-color: var(--vermillion); background: #fff5f5; box-shadow: 0 0 0 3px rgba(201,64,64,0.08); }
 
 .feedback {
   font-size: 13px; font-weight: 500; letter-spacing: 0.04em;
@@ -544,7 +552,8 @@ body::before {
   from { opacity: 0; transform: scale(0.84) translateY(8px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
-#character.appear { animation: appear 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+#character.appear,
+#quiz-character.appear { animation: appear 0.35s cubic-bezier(0.34,1.56,0.64,1); }
 
 
 /* ══ PRACTICE MODE TOGGLE (in Settings) ══ */
@@ -642,16 +651,19 @@ body::before {
   .chart-tabs { gap: 4px; }
   .chart-tab { padding: 5px 10px; font-size: 11px; }
 
-  #screen-practice { padding: 0 12px; }
+  #screen-practice,
+  #screen-quiz { padding: 0 12px; }
   .practice-body { padding-top: 56px; }
   .card { padding: 20px 16px 18px; border-radius: 18px; width: 100%; }
   .row-badge { margin-bottom: 14px; }
 
-  #character { font-size: 66px; }
+  #character,
+  #quiz-character { font-size: 66px; }
   .char-wrapper { width: 180px; height: 96px; margin-bottom: 16px; }
 
   .romaji-hint { margin-top: -4px; margin-bottom: 14px; }
-  #answer { font-size: 17px; padding: 11px 14px; }
+  #answer,
+  #quiz-answer { font-size: 17px; padding: 11px 14px; }
   .feedback { margin-bottom: 12px; }
   .btn { padding: 12px 14px; font-size: 13px; }
   .settings-panel { padding: 20px 16px; }
@@ -661,7 +673,8 @@ body::before {
   .hero-kana { font-size: 28px; letter-spacing: 0.14em; }
   .hero-title { font-size: 19px; }
   .btn-start { font-size: 13px; padding: 11px 18px; }
-  #character { font-size: 56px; }
+  #character,
+  #quiz-character { font-size: 56px; }
   .char-wrapper { width: 155px; height: 84px; }
   .card { padding: 18px 12px 16px; }
 }
@@ -669,6 +682,7 @@ body::before {
 @media (max-width: 320px) {
   .hero-kana { font-size: 22px; }
   .btn-start { font-size: 12px; padding: 10px 14px; }
-  #character { font-size: 46px; }
+  #character,
+  #quiz-character { font-size: 46px; }
   .char-wrapper { width: 130px; height: 72px; }
 }
