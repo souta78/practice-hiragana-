@@ -1,12 +1,12 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --paper:      #e4e4e4;
+  --paper:      #eeecec;
   --paper-deep: #d4d4d4;
   --ink:        #1a1714;
   --ink-muted:  #6b6560;
   --vermillion: #c94040;
-  --jade:       #3a7d5e;
+  --jade:       #2e2e2e;
   --border:     rgba(26,23,20,0.10);
   --shadow-sm:  0 2px 8px rgba(26,23,20,0.07);
   --shadow-md:  0 8px 32px rgba(26,23,20,0.10);
@@ -106,6 +106,57 @@ body::before {
   flex-wrap: wrap; margin-bottom: 4px;
 }
 
+.hero-bg-char {
+  position: absolute;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 700;
+
+  font-size: clamp(260px, 38vw, 520px);
+
+  color: var(--ink);
+  opacity: 0.035;
+
+  pointer-events: none;
+  user-select: none;
+
+  line-height: 1;
+
+  right: -2vw;
+  top: 50%;
+  transform: translateY(-50%);
+
+  z-index: 0;
+
+  animation: floatChar 14s ease-in-out infinite;
+}
+
+.hero-bg-char.secondary {
+  font-size: clamp(70px, 9vw, 120px);
+  opacity: 0.05;
+
+  right: auto;
+  left: 7%;
+  top: 18%;
+
+  animation: floatCharSecondary 18s ease-in-out infinite;
+}
+@keyframes floatChar {
+  0%, 100% {
+    transform: translateY(-50%) translateX(0);
+  }
+  50% {
+    transform: translateY(-55%) translateX(-10px);
+  }
+}
+
+@keyframes floatCharSecondary {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(-10px) translateX(6px);
+  }
+}
 .btn-start {
   display: inline-flex; align-items: center; gap: 8px;
   background: var(--ink); color: var(--paper);
