@@ -1,8 +1,8 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --paper:      #faf7f2;
-  --paper-deep: #f0ebe0;
+  --paper:      #e4e4e4;
+  --paper-deep: #d4d4d4;
   --ink:        #1a1714;
   --ink-muted:  #6b6560;
   --vermillion: #c94040;
